@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react"; 
 import Globe from "@/components/ui/globe";
 import { cn } from "@/lib/utils";
@@ -45,7 +47,7 @@ export function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, classN
   const [globeTransform, setGlobeTransform] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const animationFrameId = useRef<number>(null);
+  const animationFrameId = useRef<number | null>(null);
   
   const calculatedPositions = useMemo(() => {
     return globeConfig.positions.map(pos => ({
@@ -126,7 +128,7 @@ export function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, classN
         <div className="space-y-3 sm:space-y-4 lg:space-y-6">
           {sections.map((section, index) => (
             <div key={index} className="relative group">
-              <div className={cn("nav-label absolute right-5 sm:right-6 lg:right-8 top-1/2 -translate-y-1/2", "px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap", "bg-background/95 backdrop-blur-md border border-border/60 shadow-xl z-50", activeSection === index ? "animate-fadeOut" : "opacity-0")}>
+              <div className={cn("nav-label absolute right-5 sm:right-6 lg:right-8 top-1/2 -translate-y-1/2", "px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap", "bg-background/40 backdrop-blur-md border border-border/40 shadow-xl z-50", activeSection === index ? "animate-fadeOut" : "opacity-0")}>
                 <div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2">
                   <div className="w-1 sm:w-1.5 lg:w-2 h-1 sm:h-1.5 lg:h-2 rounded-full bg-primary animate-pulse" />
                   <span className="text-xs sm:text-sm lg:text-base">{section.badge || `Section ${index + 1}`}</span>
@@ -148,11 +150,14 @@ export function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, classN
       {sections.map((section, index) => (
         <section key={section.id} ref={(el) => { sectionRefs.current[index] = el; }} className={cn("relative min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 z-20 py-12 sm:py-16 lg:py-20", "w-full max-w-full overflow-hidden", section.align === 'center' && "items-center text-center", section.align === 'right' && "items-end text-right", section.align !== 'center' && section.align !== 'right' && "items-start text-left")}>
           <div className={cn("w-full max-w-sm sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-5xl will-change-transform transition-all duration-700", "opacity-100 translate-y-0")}>
+            <div className="inline-block px-3 py-1 mb-4 rounded-full bg-background/40 backdrop-blur-md border border-border/40 text-primary text-sm font-medium tracking-wide shadow-sm">
+              {section.badge}
+            </div>
             <h1 className={cn("font-bold mb-6 sm:mb-8 leading-[1.1] tracking-tight", index === 0 ? "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl" : "text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl")}>
               {section.subtitle ? (
                 <div className="space-y-1 sm:space-y-2">
                   <div className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">{section.title}</div>
-                  <div className="text-muted-foreground/90 text-[0.6em] sm:text-[0.7em] font-medium tracking-wider">{section.subtitle}</div>
+                  <div className="text-muted-foreground/90 text-[0.45em] sm:text-[0.55em] lg:text-[0.6em] font-medium tracking-wide uppercase leading-snug">{section.subtitle}</div>
                 </div>
               ) : (
                 <div className="bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">{section.title}</div>
@@ -174,7 +179,7 @@ export function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, classN
             {section.features && (
               <div className="grid gap-3 sm:gap-4 mb-8 sm:mb-10">
                 {section.features.map((feature, featureIndex) => (
-                  <div key={feature.title} className={cn("group p-4 sm:p-5 lg:p-6 rounded-lg sm:rounded-xl border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5", "hover:border-primary/20 hover:-translate-y-1")} style={{ animationDelay: `${featureIndex * 0.1}s` }}>
+                  <div key={feature.title} className={cn("group p-4 sm:p-5 lg:p-6 rounded-lg sm:rounded-xl bg-background/40 backdrop-blur-md border border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1")} style={{ animationDelay: `${featureIndex * 0.1}s` }}>
                     <div className="flex items-start gap-3 sm:gap-4">
                       <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-primary/60 mt-1.5 sm:mt-2 group-hover:bg-primary transition-colors flex-shrink-0" />
                       <div className="flex-1 space-y-1.5 sm:space-y-2 min-w-0">
@@ -190,10 +195,10 @@ export function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, classN
             {section.actions && (
               <div className={cn("flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4", section.align === 'center' && "justify-center", section.align === 'right' && "justify-end", (!section.align || section.align === 'left') && "justify-start")}>
                 {section.actions.map((action, actionIndex) => (
-                  <button key={action.label} onClick={action.onClick} className={cn("group relative px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base", "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/20 w-full sm:w-auto", action.variant === 'primary' ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 hover:shadow-primary/30" : "border-2 border-border/60 bg-background/50 backdrop-blur-sm hover:bg-accent/50 hover:border-primary/30 text-foreground")} style={{ animationDelay: `${actionIndex * 0.1 + 0.2}s` }}>
-                    <span className="relative z-10">{action.label}</span>
+                  <button key={action.label} onClick={action.onClick} className={cn("group relative px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base", "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/20 w-full sm:w-auto", "bg-background/40 backdrop-blur-md border border-border/40 hover:border-primary/30")} style={{ animationDelay: `${actionIndex * 0.1 + 0.2}s` }}>
+                    <span className={cn("relative z-10", action.variant === 'primary' ? "text-primary group-hover:text-primary/90 font-semibold" : "text-foreground")}>{action.label}</span>
                     {action.variant === 'primary' && (
-                      <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     )}
                   </button>
                 ))}
@@ -211,51 +216,47 @@ export default function GlobeScrollDemo() {
     {
       id: "hero",
       badge: "Uzair Khan",
-      title: "Building the Future",
-      subtitle: "Full-Stack AI Developer",
-      description: "Information Technology engineer crafting high-performance web applications and intelligent AI integrations. Expected to graduate with a B.Tech in IT from KJ Somaiya College of Engineering in 2027.",
+      title: "Engineering the Future of Web & AI",
+      subtitle: "Full-Stack Developer | B.Tech IT student at KJ Somaiya",
+      description: "Crafting high-performance web applications using the MERN stack and developing intelligent automated systems with the Gemini API.",
       align: "left" as const,
       actions: [
-        { label: "LinkedIn", variant: "primary" as const, onClick: () => window.open('https://linkedin.com/in/uzair-khan231205', '_blank') },
+        { label: "Explore Work", variant: "primary" as const, onClick: () => { document.getElementById("projects")?.scrollIntoView({ behavior: 'smooth', block: 'center' }) } },
         { label: "GitHub Profile", variant: "secondary" as const, onClick: () => window.open('https://github.com/Uzair-23', '_blank') }
       ]
     },
     {
       id: "projects",
-      badge: "Projects",
-      title: "Featured Work",
-      subtitle: "AI & Full-Stack Applications",
-      description: "Showcasing intelligent platforms designed and developed with modern MERN stack and AI tools.",
+      badge: "Featured Production",
+      title: "AI-Powered Event Management Platform",
+      description: "Architected a full-stack event hub with an automated structured content engine and live tracking dashboards.",
       align: "right" as const,
       features: [
-        { title: "AI-Powered Event Management Platform", description: "Built with Node.js, Express, React, MongoDB, and Gemini AI. Highlights include an AI Content Engine and real-time sync using Socket.io." },
-        { title: "AI-Powered Personal Finance Tracker", description: "MERN stack application with JWT authentication, insightful Chart.js visualizations, and external APIs integration." },
-        { title: "Dhansathi", description: "Rural Women Financial Literacy platform. Uses MERN stack, Clerk Auth, Groq Cloud API, and features an integrated AI Chatbot." }
+        { title: "Gemini 1.5 Flash Engine", description: "Automates structured event descriptions and agendas from simple user prompts." },
+        { title: "Real-time Sync", description: "Socket.io infrastructure for instant registration tracking and live dashboard metrics." },
+        { title: "Secure Ticketing", description: "High-security check-in module featuring QR code generation and Clerk RBAC authentication." }
       ]
     },
     {
-      id: "experience",
-      badge: "Hackathons",
-      title: "Experience",
-      subtitle: "Building Under Pressure",
-      description: "Demonstrated ability to innovate and deliver functional applications in competitive environments.",
+      id: "fintech",
+      badge: "MERN Integrations",
+      title: "Intelligent Personal Finance & Literacy",
+      description: "Engineered robust analytical tracking software alongside high-accessibility platforms built to simplify complex financial data.",
       align: "left" as const,
       features: [
-        { title: "Smart India Hackathon 2024", description: "Finalist. Participated as a Full-Stack Developer to build an impactful solution." },
-        { title: "GenAI Thon 2024", description: "Frontend & UI Contributor. Also contributed to backend integration." }
+        { title: "AI Personal Finance Tracker", description: "MERN engine featuring interactive Chart.js dashboards, secure JWT, and live market data via Finnhub/NewsData.io APIs." },
+        { title: "Dhansathi Literacy Platform", description: "High-accessibility UI designed for non-technical users, integrated with an interactive AI chatbot powered by Groq Cloud API." }
       ]
     },
     {
-      id: "skills",
-      badge: "Skills",
-      title: "Technical Arsenal",
-      subtitle: "Technologies I Use",
-      description: "Equipped with a diverse set of languages, frameworks, and AI tools for comprehensive full-stack development.",
+      id: "hackathons",
+      badge: "Competitive Arena",
+      title: "Validated in High-Pressure Hackathons",
+      description: "Tested, refined, and recognized for collaborative engineering and rapid prototyping under intense timelines.",
       align: "center" as const,
       features: [
-        { title: "Languages & Frameworks", description: "JavaScript, Python, React.js, Tailwind CSS, Node.js." },
-        { title: "Databases & AI", description: "MongoDB, Gemini AI, Agentic AI integrations." },
-        { title: "Tools & DevOps", description: "Git, CI/CD, modern Web APIs." }
+        { title: "Smart India Hackathon (SIH) 2024", description: "Finalist team contributor. Engineered the React frontend layout and integrated complex Node.js RESTful APIs." },
+        { title: "GenAI Thon 2024 Achievement", description: "Awarded for optimizing MongoDB schemas and backend components, improving query system performance by 20%." }
       ]
     }
   ];
